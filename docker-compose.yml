@@ -2,17 +2,17 @@ services:
   nextjs:
     build:
       context: .
-      dockerfile: Dockerfile   # ← Usa el Dockerfile que ya tienes
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     volumes:
-      - .:/app                 # ← Bind mount para código en vivo
-      - /app/node_modules      # ← Protege node_modules
-      - /app/.next             # ← Protege .next (build cache)
+      - .:/app
+      - /app/node_modules
+      - /app/.next
     environment:
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
-      - CHOKIDAR_USEPOLLING=true   # ← Hot-reload en Docker
-      - WATCHPACK_POLLING=true     # ← Hot-reload para Next.js
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,48 +1,181 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📅 Automatización de horarios
 
-## Getting Started
+> Proyecto universitario para la gestión y automatización de horarios en instituciones educativas.
 
-First, run the development server:
+## 📝 Descripción
+
+**Automatización de horarios** es una aplicación web que permite a universidades, colegios e institutos organizar sus horarios académicos de forma sencilla. Los usuarios pueden cargar datos básicos (docentes, cursos, aulas, franjas horarias) y el sistema genera propuestas de horarios optimizadas.
+
+Este proyecto es parte de un trabajo colaborativo universitario, desarrollado con un stack moderno y empaquetado con Docker para garantizar que todos los miembros del equipo trabajen en el mismo entorno sin importar su sistema operativo.
+
+## 🛠️ Tecnologías utilizadas
+
+| Tecnología | ¿Para qué sirve en este proyecto? |
+|------------|------------------------------------|
+| **Next.js 16** | Framework de React para el frontend y las APIs del backend. |
+| **Node.js 20** | Entorno de ejecución de JavaScript que corre el servidor de Next.js. |
+| **Prisma 6** | ORM (Object Relational Mapping) que conecta la app con PostgreSQL y maneja las migraciones. |
+| **PostgreSQL 15** | Base de datos relacional donde se guardan horarios, cursos, docentes y aulas. |
+| **Docker & Docker Compose** | Contenedores que unifican el entorno de desarrollo: todos usan la misma versión de Node, Prisma y PostgreSQL. |
+| **TypeScript** | Tipado estático para JavaScript, mejora la mantenibilidad del código. |
+| **TailwindCSS** | Framework de CSS para estilizar rápidamente la interfaz. |
+
+## 🐳 ¿Por qué Docker?
+
+Docker permite que cada miembro del equipo tenga **el mismo entorno** sin instalar Node, PostgreSQL ni Prisma directamente en su máquina. Solo necesitan Docker y Docker Compose.
+
+## 🗄️ Cliente gráfico para la base de datos (recomendado)
+
+Para explorar y modificar los datos de PostgreSQL visualmente, recomiendo usar **DBeaver** (gratuito, multiplataforma).
+
+### Conexión con DBeaver
+
+Una vez que el proyecto esté corriendo con `docker compose up -d`, PostgreSQL estará disponible en:
+
+| Campo | Valor |
+|-------|-------|
+| **Host** | `localhost` |
+| **Puerto** | `5432` |
+| **Usuario** | `postgres` |
+| **Contraseña** | La que definiste en `.env` (compartida por el equipo) |
+| **Base de datos** | `mi_proyecto` |
+
+También puedes usar Prisma Studio ejecutando dentro del contenedor:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose exec nextjs npx prisma studio
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Luego abre http://localhost:5555
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Primeros pasos (para todo el equipo)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1️⃣ Requisitos previos
 
-## Learn More
+- Docker Desktop instalado y ejecutándose (Windows/Mac/Linux).  
+  Descargar desde: https://www.docker.com/products/docker-desktop/
+- Git instalado.
 
-To learn more about Next.js, take a look at the following resources:
+### 2️⃣ Clonar el repositorio
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+git clone https://github.com/TU_USUARIO/automatizacion-horarios.git
+cd automatizacion-horarios
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3️⃣ Configurar variables de entorno
 
-## Deploy on Vercel
+El proyecto necesita un archivo `.env` con las credenciales de la base de datos.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+🔹 **En Windows (PowerShell):**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```powershell
+New-Item -Path .env -ItemType File
+```
 
-# Proyecto Horario - Next.js + Prisma + PostgreSQL
+Luego abre el archivo `.env` con el bloc de notas y completa las variables con las credenciales que te fueron enviadas por el equipo:
 
-## Requisitos
-- Docker y Docker Compose instalados
+```env
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+```
 
-## Iniciar el proyecto
+> 🔒 Las credenciales reales **no se publican aquí**. Serán compartidas por el equipo a través de un canal seguro.
 
-1. Clonar el repositorio:
-   ```bash
-   git clone <url-del-repo>
-   cd proyecto-horario
+🔹 **En Linux / macOS:**
+
+```bash
+cp .env.example .env
+```
+
+### 4️⃣ Levantar el proyecto con Docker Compose
+
+```bash
+docker compose up -d
+```
+
+> ⏳ La primera ejecución puede tardar unos minutos mientras se descargan las imágenes y se construye el contenedor de Next.js.
+
+### 5️⃣ Verificar que todo funciona
+
+Abre http://localhost:3000 en tu navegador.
+
+Prueba la API de ejemplo:
+
+```bash
+curl http://localhost:3000/api/users
+```
+
+Debería responder con un arreglo vacío: `[]`
+
+## 📦 Comandos útiles durante el desarrollo
+
+| Comando | Qué hace |
+|---------|----------|
+| `docker compose up -d` | Levantar los contenedores en segundo plano |
+| `docker compose logs -f` | Ver logs en tiempo real |
+| `docker compose down` | Detener los contenedores |
+| `docker compose down -v` | Detener y eliminar también los datos de la base de datos (reinicio total) |
+| `docker compose exec nextjs sh` | Abrir una terminal dentro del contenedor de Next.js |
+| `docker compose exec postgres psql -U postgres` | Entrar a la consola de PostgreSQL |
+
+## 🧱 Migraciones de Prisma (cuando se cambia el esquema)
+
+Si modificas el archivo `prisma/schema.prisma`, debes crear una nueva migración:
+
+```bash
+docker compose exec nextjs npx prisma migrate dev --name nombre_de_la_migracion
+```
+
+Esto actualizará la base de datos y regenerará el cliente de Prisma automáticamente.
+
+## 🧹 Reiniciar el proyecto desde cero (si algo falla)
+
+Si encuentras errores extraños o quieres empezar con una base de datos limpia:
+
+```bash
+docker compose down -v
+docker compose build --no-cache
+docker compose up -d
+```
+
+## 📁 Estructura del proyecto
+
+```
+automatizacion-horarios/
+├── app/                    # Páginas y API de Next.js
+├── prisma/
+│   ├── schema.prisma       # Definición de las tablas y relaciones
+│   └── migrations/         # Migraciones generadas automáticamente
+├── public/                 # Archivos estáticos (imágenes, fuentes, etc.)
+├── Dockerfile              # Configuración de la imagen de Next.js
+├── docker-compose.yml      # Orquestación de servicios (Next.js + PostgreSQL)
+├── .env.example            # Plantilla de variables de entorno
+├── next.config.js          # Configuración de Next.js
+├── package.json            # Dependencias y scripts
+└── README.md               # Este archivo
+```
+
+## 🤝 Colaboración con GitHub
+
+La rama `main` está protegida. **No se puede hacer push directo**, todo cambio debe entrar mediante un **Pull Request (PR)**. El flujo recomendado es:
+
+```bash
+git pull origin main                  # Traer los últimos cambios
+git checkout -b feature/nombre-rama   # Crear tu rama de trabajo
+docker compose up -d                  # Levantar el entorno
+# ... trabajar, hacer cambios ...
+git add .
+git commit -m "descripción del cambio"
+git push origin feature/nombre-rama   # Subir tu rama
+```
+
+Luego abre un **Pull Request** en GitHub desde tu rama hacia `main` y espera revisión antes de hacer merge.
+
+> ⚠️ Antes de hacer `git push`, asegúrate de no estar subiendo el archivo `.env` (debe estar en `.gitignore`).
+
+## ❓ Posibles problemas en Windows
+
+- Si ves errores como `The "DB_USER" variable is not set`, asegúrate de haber creado el archivo `.env` manualmente con los valores indicados en el paso 3.
+- Si el puerto `5432` o `3000` ya están ocupados en tu máquina, edita el `docker-compose.yml` para cambiar los puertos de exposición (el valor de la izquierda del `:`).
