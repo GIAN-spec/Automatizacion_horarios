@@ -1,6 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+interface TipoAula {
+  id_tipo_aula: string
+  nom_tipo_aula: string
+}
 
 export default function AulaForm() {
   const [formData, setFormData] = useState({
@@ -9,23 +14,30 @@ export default function AulaForm() {
     id_tipo_aula: '',
     capacidad: '',
   })
+  const [tiposAula, setTiposAula] = useState<TipoAula[]>([])
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const fetchMasterData = async () => {
+      try {
+        const res = await fetch('/api/master-data')
+        const data = await res.json()
+        if (data.tiposAula) setTiposAula(data.tiposAula)
+      } catch (err) {
+        console.error('Error fetching master data:', err)
+      }
+    }
+    fetchMasterData()
+  }, [])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('loading')
-
-    // Imprimir en consola del navegador
-    console.log('═══════════════════════════════════════')
-    console.log('🏫 NUEVA AULA (Browser Console)')
-    console.log('═══════════════════════════════════════')
-    console.log('Datos enviados:', formData)
-    console.log('═══════════════════════════════════════')
 
     try {
       const res = await fetch('/api/aulas', {
@@ -37,9 +49,8 @@ export default function AulaForm() {
       const data = await res.json()
 
       if (res.ok) {
-        console.log('✅ Respuesta del servidor:', data)
         setStatus('success')
-        setMessage('Aula registrada exitosamente (ver consola del servidor)')
+        setMessage('Aula registrada exitosamente en la base de datos')
         setFormData({
           id_aula: '',
           nom_aula: '',
@@ -47,7 +58,6 @@ export default function AulaForm() {
           capacidad: '',
         })
       } else {
-        console.error('❌ Error:', data.error)
         setStatus('error')
         setMessage(data.error || 'Error al registrar aula')
       }
@@ -98,16 +108,21 @@ export default function AulaForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="aula-tipo">ID Tipo de Aula</label>
-          <input
+          <label htmlFor="aula-tipo">Tipo de Aula</label>
+          <select
             id="aula-tipo"
             name="id_tipo_aula"
-            type="text"
-            placeholder="TIP-001"
             value={formData.id_tipo_aula}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">Seleccionar tipo...</option>
+            {tiposAula.map((t) => (
+              <option key={t.id_tipo_aula} value={t.id_tipo_aula}>
+                {t.nom_tipo_aula} ({t.id_tipo_aula})
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="form-group">
@@ -127,7 +142,7 @@ export default function AulaForm() {
 
       <button type="submit" className="btn-submit" disabled={status === 'loading'}>
         {status === 'loading' ? (
-          <span className="btn-loading">⏳ Enviando...</span>
+          <span className="btn-loading">⏳ Guardando...</span>
         ) : (
           '📤 Registrar Aula'
         )}

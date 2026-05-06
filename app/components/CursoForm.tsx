@@ -1,6 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+interface Carrera {
+  id_carrera: string
+  nom_carrera: string
+}
+
+interface Ciclo {
+  id_ciclo: number
+  nom_ciclo: string
+}
 
 export default function CursoForm() {
   const [formData, setFormData] = useState({
@@ -12,8 +22,24 @@ export default function CursoForm() {
     tipo_curso: '',
     id_ciclo: '',
   })
+  const [carreras, setCarreras] = useState<Carrera[]>([])
+  const [ciclos, setCiclos] = useState<Ciclo[]>([])
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    const fetchMasterData = async () => {
+      try {
+        const res = await fetch('/api/master-data')
+        const data = await res.json()
+        if (data.carreras) setCarreras(data.carreras)
+        if (data.ciclos) setCiclos(data.ciclos)
+      } catch (err) {
+        console.error('Error fetching master data:', err)
+      }
+    }
+    fetchMasterData()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -22,13 +48,6 @@ export default function CursoForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('loading')
-
-    // Imprimir en consola del navegador
-    console.log('═══════════════════════════════════════')
-    console.log('📚 NUEVO CURSO (Browser Console)')
-    console.log('═══════════════════════════════════════')
-    console.log('Datos enviados:', formData)
-    console.log('═══════════════════════════════════════')
 
     try {
       const res = await fetch('/api/cursos', {
@@ -40,9 +59,8 @@ export default function CursoForm() {
       const data = await res.json()
 
       if (res.ok) {
-        console.log('✅ Respuesta del servidor:', data)
         setStatus('success')
-        setMessage('Curso registrado exitosamente (ver consola del servidor)')
+        setMessage('Curso registrado exitosamente en la base de datos')
         setFormData({
           id_curso: '',
           creditos: '',
@@ -53,7 +71,6 @@ export default function CursoForm() {
           id_ciclo: '',
         })
       } else {
-        console.error('❌ Error:', data.error)
         setStatus('error')
         setMessage(data.error || 'Error al registrar curso')
       }
@@ -118,16 +135,21 @@ export default function CursoForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="curso-carrera">ID Carrera</label>
-          <input
+          <label htmlFor="curso-carrera">Carrera</label>
+          <select
             id="curso-carrera"
             name="id_carrera"
-            type="text"
-            placeholder="CAR-001"
             value={formData.id_carrera}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">Seleccionar carrera...</option>
+            {carreras.map((c) => (
+              <option key={c.id_carrera} value={c.id_carrera}>
+                {c.nom_carrera} ({c.id_carrera})
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="form-group">
@@ -160,23 +182,27 @@ export default function CursoForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="curso-ciclo">ID Ciclo</label>
-          <input
+          <label htmlFor="curso-ciclo">Ciclo</label>
+          <select
             id="curso-ciclo"
             name="id_ciclo"
-            type="number"
-            placeholder="1"
-            min="1"
             value={formData.id_ciclo}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">Seleccionar ciclo...</option>
+            {ciclos.map((c) => (
+              <option key={c.id_ciclo} value={c.id_ciclo}>
+                {c.nom_ciclo}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
       <button type="submit" className="btn-submit" disabled={status === 'loading'}>
         {status === 'loading' ? (
-          <span className="btn-loading">⏳ Enviando...</span>
+          <span className="btn-loading">⏳ Guardando...</span>
         ) : (
           '📤 Registrar Curso'
         )}

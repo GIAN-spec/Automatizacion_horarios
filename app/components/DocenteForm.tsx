@@ -21,13 +21,6 @@ export default function DocenteForm() {
     e.preventDefault()
     setStatus('loading')
 
-    // Imprimir en consola del navegador
-    console.log('═══════════════════════════════════════')
-    console.log('📋 NUEVO DOCENTE (Browser Console)')
-    console.log('═══════════════════════════════════════')
-    console.log('Datos enviados:', formData)
-    console.log('═══════════════════════════════════════')
-
     try {
       const res = await fetch('/api/docentes', {
         method: 'POST',
@@ -38,9 +31,8 @@ export default function DocenteForm() {
       const data = await res.json()
 
       if (res.ok) {
-        console.log('✅ Respuesta del servidor:', data)
         setStatus('success')
-        setMessage('Docente registrado exitosamente (ver consola del servidor)')
+        setMessage('Docente registrado exitosamente en la base de datos')
         setFormData({
           id_docente: '',
           dni_docente: '',
@@ -49,7 +41,6 @@ export default function DocenteForm() {
           nom_especialidad: '',
         })
       } else {
-        console.error('❌ Error:', data.error)
         setStatus('error')
         setMessage(data.error || 'Error al registrar docente')
       }
@@ -141,7 +132,7 @@ export default function DocenteForm() {
 
       <button type="submit" className="btn-submit" disabled={status === 'loading'}>
         {status === 'loading' ? (
-          <span className="btn-loading">⏳ Enviando...</span>
+          <span className="btn-loading">⏳ Guardando...</span>
         ) : (
           '📤 Registrar Docente'
         )}

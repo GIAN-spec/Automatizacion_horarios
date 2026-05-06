@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: Request) {
   try {
@@ -14,26 +15,37 @@ export async function POST(request: Request) {
       )
     }
 
-    const aula = {
-      id_aula,
-      nom_aula,
-      id_tipo_aula,
-      capacidad: Number(capacidad),
+    // Crear aula en la base de datos usando Prisma
+    const aula = await prisma.aula.create({
+      data: {
+        id_aula,
+        nom_aula,
+        id_tipo_aula,
+        capacidad: Number(capacidad),
+      },
+    })
+
+    return NextResponse.json({ 
+      message: 'Aula registrada exitosamente', 
+      data: aula 
+    })
+  } catch (error: any) {
+    console.error('Error al registrar aula:', error)
+
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Ya existe un aula con este ID' },
+        { status: 400 }
+      )
     }
 
-    // Imprimir en consola del servidor
-    console.log('═══════════════════════════════════════')
-    console.log('🏫 NUEVA AULA REGISTRADA')
-    console.log('═══════════════════════════════════════')
-    console.log('ID Aula:       ', aula.id_aula)
-    console.log('Nombre:        ', aula.nom_aula)
-    console.log('ID Tipo Aula:  ', aula.id_tipo_aula)
-    console.log('Capacidad:     ', aula.capacidad)
-    console.log('═══════════════════════════════════════')
+    if (error.code === 'P2003') {
+      return NextResponse.json(
+        { error: 'El tipo de aula seleccionado no es válido' },
+        { status: 400 }
+      )
+    }
 
-    return NextResponse.json({ message: 'Aula registrada (console.log)', data: aula })
-  } catch (error) {
-    console.error('Error al procesar aula:', error)
     return NextResponse.json(
       { error: 'Error al procesar la solicitud' },
       { status: 500 }

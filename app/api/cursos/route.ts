@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: Request) {
   try {
@@ -14,32 +15,40 @@ export async function POST(request: Request) {
       )
     }
 
-    const curso = {
-      id_curso,
-      creditos: Number(creditos),
-      nom_curso,
-      id_carrera,
-      modalidad,
-      tipo_curso,
-      id_ciclo: Number(id_ciclo),
+    // Crear curso en la base de datos usando Prisma
+    const curso = await prisma.curso.create({
+      data: {
+        id_curso,
+        creditos: Number(creditos),
+        nom_curso,
+        id_carrera,
+        modalidad,
+        tipo_curso,
+        id_ciclo: Number(id_ciclo),
+      },
+    })
+
+    return NextResponse.json({ 
+      message: 'Curso registrado exitosamente', 
+      data: curso 
+    })
+  } catch (error: any) {
+    console.error('Error al registrar curso:', error)
+
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Ya existe un curso con este ID' },
+        { status: 400 }
+      )
     }
 
-    // Imprimir en consola del servidor
-    console.log('═══════════════════════════════════════')
-    console.log('📚 NUEVO CURSO REGISTRADO')
-    console.log('═══════════════════════════════════════')
-    console.log('ID Curso:      ', curso.id_curso)
-    console.log('Créditos:      ', curso.creditos)
-    console.log('Nombre:        ', curso.nom_curso)
-    console.log('ID Carrera:    ', curso.id_carrera)
-    console.log('Modalidad:     ', curso.modalidad)
-    console.log('Tipo Curso:    ', curso.tipo_curso)
-    console.log('ID Ciclo:      ', curso.id_ciclo)
-    console.log('═══════════════════════════════════════')
+    if (error.code === 'P2003') {
+      return NextResponse.json(
+        { error: 'La carrera o el ciclo seleccionados no son válidos' },
+        { status: 400 }
+      )
+    }
 
-    return NextResponse.json({ message: 'Curso registrado (console.log)', data: curso })
-  } catch (error) {
-    console.error('Error al procesar curso:', error)
     return NextResponse.json(
       { error: 'Error al procesar la solicitud' },
       { status: 500 }
